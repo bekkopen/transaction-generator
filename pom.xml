@@ -49,7 +49,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>no.bekk.bigdata.TransactionGenerator</mainClass>
+                            <mainClass>no.bekk.bigdata.Generator</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

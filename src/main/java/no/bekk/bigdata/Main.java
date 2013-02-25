@@ -86,7 +86,7 @@ public class Main {
             }
         }
 
-        TransactionGenerator generator = new TransactionGenerator(logging, generateTransactions, dryrun,
+        Generator generator = new Generator(logging, generateTransactions, dryrun,
                                                                   transactionsToGenerate, startYear, numberOfYears,
                                                                   usersToCreate, maxAccountsPerUserBm,
                                                                   maxAccountsPerUserPm, new HBaseClient());
