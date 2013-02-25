@@ -10,7 +10,7 @@ import java.util.*;
 
 public class TransactionGenerator {
     private final static SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
-    HBaseClient client = new HBaseClient();
+    private final HBaseClient client;
 
     // User controllable parameters:
     private static boolean logging = true;
@@ -63,6 +63,11 @@ public class TransactionGenerator {
     // statistics
     private static long transactionsCreated = 0;
     private static long transactionsPerDay = 0;
+
+
+    public TransactionGenerator() throws IOException {
+        client = new HBaseClient();
+    }
 
     /**
      * Yeah baby, let's overload the system!
@@ -404,8 +409,8 @@ public class TransactionGenerator {
         System.out.println("Transactions per group: " + transactionsPerGroup);
         System.out.println("Accounts with transactions: ");
         System.out.println("----------------------------");
-        for (int i = 0; i < accounts.size(); i++) {
-            int groupIndex = (int) Math.floor((accounts.get(i).numberOfTransactions) / transactionsPerGroup);
+        for (Account account : accounts) {
+            int groupIndex = (int) Math.floor((account.numberOfTransactions) / transactionsPerGroup);
             transactionDistribution[groupIndex]++;
         }
 
@@ -468,15 +473,14 @@ public class TransactionGenerator {
         //TODO: Add DB code here
     }
 
-    public static void main(String args[]) {
+    public static void main(String args[]) throws IOException {
         boolean shouldRun = true;
 
 
         System.out.println("Usage: start with --help to get parameter list");
 
-        for (int i = 0; i < args.length; i++) {
-            String param = args[i];
-            String value = args[i].contains("=") ? args[i].split("=")[1] : "";
+        for (String param : args) {
+            String value = param.contains("=") ? param.split("=")[1] : "";
 
             if (param.startsWith("--help")) {
                 printHelp();
