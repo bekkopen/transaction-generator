@@ -17,21 +17,21 @@ public class TransactionGenerator {
     private final HBaseClient client;
 
     // User controllable parameters:
-    private static boolean logging = true;
-    private static boolean generateTransactions = true;
-    private static boolean dryrun = false; // set this to true to generate data without inserting into database
+    private final boolean logging;
+    private final boolean generateTransactions;
+    private final boolean dryrun;
 
-    private static long TRANSACTIONS_TO_GENERATE = 60000000; //60 millions = 12 millions pr year over 5 years
-    private static int START_YEAR = 2008;
-    private static int NUMBER_OF_YEARS = 5;
+    private final long transactionsToGenerate;
+    private final int startYear;
+    private final int numberOfYears;
 
-    private static int USERS_TO_CREATE = 150; //750 000 i reel base, hvorav 500 000 er aktive.
-    private static int MAX_ACCOUNTS_PER_USER_PM = 20;
-    private static int MAX_ACCOUNTS_PER_USER_BM = 2000;
+    private final int usersToCreate;
+    private final int maxAccountsPerUserPm;
+    private final int maxAccountsPerUserBm;
 
-    private final static int MAX_ACCOUNT_PREFIXES_PER_USER_PM = 3;
-    private final static int MAX_ACCOUNT_PREFIXES_PER_USER_BM = 10;
-    private final static int PERCENTAGE_PM_USERS = 85;
+    private static final int MAX_ACCOUNT_PREFIXES_PER_USER_PM = 3;
+    private static final int MAX_ACCOUNT_PREFIXES_PER_USER_BM = 10;
+    private static final int PERCENTAGE_PM_USERS = 85;
 
 
     // Parameters for transaction generation
@@ -61,15 +61,28 @@ public class TransactionGenerator {
 
 
     // Generated data
-    private List<Account> accounts = new ArrayList<Account>();
-    private List<User> users = new ArrayList<User>(USERS_TO_CREATE);
+    private final List<Account> accounts = new ArrayList<Account>();
+    private final List<User> users;
 
     // statistics
     private static long transactionsCreated = 0;
     private static long transactionsPerDay = 0;
 
 
-    public TransactionGenerator() throws IOException {
+    public TransactionGenerator(boolean logging, boolean generateTransactions, boolean dryrun,
+                                long transactionsToGenerate, int startYear, int numberOfYears,
+                                int usersToCreate, int maxAccountsPerUserBm, int maxAccountsPerUserPm) throws
+                                                                                                       IOException {
+        this.logging = logging;
+        this.generateTransactions = generateTransactions;
+        this.dryrun = dryrun;
+        this.transactionsToGenerate = transactionsToGenerate;
+        this.startYear = startYear;
+        this.numberOfYears = numberOfYears;
+        this.usersToCreate = usersToCreate;
+        this.maxAccountsPerUserBm = maxAccountsPerUserBm;
+        this.maxAccountsPerUserPm = maxAccountsPerUserPm;
+        this.users = new ArrayList<User>(usersToCreate);
         client = new HBaseClient();
     }
 
@@ -109,17 +122,17 @@ public class TransactionGenerator {
 
         // calculate the number of days to create transactions for
         Calendar calendar = Calendar.getInstance();
-        calendar.set(START_YEAR, Calendar.JANUARY, 1, 0, 0, 0);
+        calendar.set(startYear, Calendar.JANUARY, 1, 0, 0, 0);
 
         Calendar endCalendar = Calendar.getInstance();
-        endCalendar.set(START_YEAR + NUMBER_OF_YEARS, Calendar.JANUARY, 1, 0, 0, 0);
+        endCalendar.set(startYear + numberOfYears, Calendar.JANUARY, 1, 0, 0, 0);
 
         int days = (int) ((endCalendar.getTimeInMillis() - calendar.getTimeInMillis()) / (1000.0 * 60 * 60 * 24));
         if (logging) {
             System.out.println("Total number of days to create transactions for: " + days);
         }
 
-        transactionsPerDay = (long) Math.floor(TRANSACTIONS_TO_GENERATE / days);
+        transactionsPerDay = (long) Math.floor(transactionsToGenerate / days);
 
         if (logging) {
             System.out.printf("Transactions to create per month: %d\n", transactionsPerDay);
@@ -158,7 +171,7 @@ public class TransactionGenerator {
                         dateFormatter.format(date),
                         transactionsPerDay,
                         milliseconds,
-                        1000 * transactionsPerDay/milliseconds,
+                        1000 * transactionsPerDay / milliseconds,
                         transactionsCreated);
             }
         }
@@ -321,14 +334,14 @@ public class TransactionGenerator {
 
     private void generateUsersAndAccounts() {
         if (logging) {
-            System.out.println("Going to create " + USERS_TO_CREATE + " users");
+            System.out.println("Going to create " + usersToCreate + " users");
         }
 
-        for (int i = 0; i < USERS_TO_CREATE; i++) {
+        for (int i = 0; i < usersToCreate; i++) {
             boolean isPm = random.nextInt(100) < PERCENTAGE_PM_USERS;
 
             // for the time being the number of accounts for a user is linearly distributed
-            int numberOfAccounts = random.nextInt(isPm ? MAX_ACCOUNTS_PER_USER_PM : MAX_ACCOUNTS_PER_USER_BM);
+            int numberOfAccounts = random.nextInt(isPm ? maxAccountsPerUserPm : maxAccountsPerUserBm);
             int numberOfAccountPrefixes =
                     (1 + random.nextInt(isPm ? MAX_ACCOUNT_PREFIXES_PER_USER_PM : MAX_ACCOUNT_PREFIXES_PER_USER_BM));
             int accountsPerPrefix = (int) Math.floor(numberOfAccounts / numberOfAccountPrefixes);
@@ -429,29 +442,6 @@ public class TransactionGenerator {
         System.out.println("Max transactions in an account: " + highestCount);
     }
 
-    private static void printHelp() {
-
-        System.out.println("Possible parameters:");
-        System.out.println(" --logging=off               --- turn off logging to console");
-        System.out.println(" --generate=off              --- disable transaction generation");
-        System.out.println(" --dryrun=on                 --- dryrun, creates data but doesn't store to database");
-        System.out
-                .println(
-                        " --transcount=XXXXXX         --- number of transactions (in total) to generate, defaults to " +
-                                TRANSACTIONS_TO_GENERATE);
-        System.out.println(" --startyear=XXXX            --- start year, defaults to " + START_YEAR);
-        System.out
-                .println(" --yearcount=X               --- number of years to generate data for, defaults to " +
-                                 NUMBER_OF_YEARS);
-        System.out
-                .println(" --usercount=XXXXXXX         --- number of users to create, defaults to " + USERS_TO_CREATE);
-        System.out
-                .println(" --maxaccbm=XXXXXXX          --- max number of accounts per bm user, defaults to " +
-                                 MAX_ACCOUNTS_PER_USER_BM);
-        System.out
-                .println(" --maxaccpm=XXXXXXX          --- max number of accounts per pm user, defaults to " +
-                                 MAX_ACCOUNTS_PER_USER_PM);
-    }
 
     /**
      * Implement this to add data to database
@@ -471,66 +461,4 @@ public class TransactionGenerator {
         //TODO: Add DB code here
     }
 
-    public static void main(String args[]) throws IOException {
-        boolean shouldRun = true;
-
-
-        System.out.println("Usage: start with --help to get parameter list");
-
-        for (String param : args) {
-            String value = param.contains("=") ? param.split("=")[1] : "";
-
-            if (param.startsWith("--help")) {
-                printHelp();
-                shouldRun = false;
-            }
-
-            if (param.startsWith("--logging")) {
-                if ("off".equals(value)) {
-                    logging = false;
-                }
-            }
-
-            if (param.startsWith("--generate")) {
-                if ("off".equals(value)) {
-                    generateTransactions = false;
-                }
-            }
-
-            if (param.startsWith("--dryrun")) {
-                if ("on".equals(value)) {
-                    dryrun = true;
-                }
-            }
-
-            if (param.startsWith("--transcount")) {
-                TRANSACTIONS_TO_GENERATE = Integer.parseInt(value);
-            }
-
-            if (param.startsWith("--startyear")) {
-                START_YEAR = Integer.parseInt(value);
-            }
-
-            if (param.startsWith("--yearcount")) {
-                NUMBER_OF_YEARS = Integer.parseInt(value);
-            }
-
-            if (param.startsWith("--usercount")) {
-                USERS_TO_CREATE = Integer.parseInt(value);
-            }
-
-            if (param.startsWith("--maxaccbm")) {
-                MAX_ACCOUNTS_PER_USER_BM = Integer.parseInt(value);
-            }
-
-            if (param.startsWith("--maxaccpm")) {
-                MAX_ACCOUNTS_PER_USER_PM = Integer.parseInt(value);
-            }
-        }
-
-        if (shouldRun) {
-            TransactionGenerator generator = new TransactionGenerator();
-            generator.goCrazy();
-        }
-    }
 }
