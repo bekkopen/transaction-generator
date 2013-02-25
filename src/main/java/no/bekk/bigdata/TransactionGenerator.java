@@ -1,5 +1,7 @@
 package no.bekk.bigdata;
 
+import no.bekk.bigdata.database.DatabaseClient;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -14,7 +16,7 @@ import java.util.Random;
 
 public class TransactionGenerator {
     private final static SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
-    private final HBaseClient client;
+    private final DatabaseClient client;
 
     // User controllable parameters:
     private final boolean logging;
@@ -71,7 +73,8 @@ public class TransactionGenerator {
 
     public TransactionGenerator(boolean logging, boolean generateTransactions, boolean dryrun,
                                 long transactionsToGenerate, int startYear, int numberOfYears,
-                                int usersToCreate, int maxAccountsPerUserBm, int maxAccountsPerUserPm) throws
+                                int usersToCreate, int maxAccountsPerUserBm, int maxAccountsPerUserPm,
+                                DatabaseClient client) throws
                                                                                                        IOException {
         this.logging = logging;
         this.generateTransactions = generateTransactions;
@@ -83,7 +86,7 @@ public class TransactionGenerator {
         this.maxAccountsPerUserBm = maxAccountsPerUserBm;
         this.maxAccountsPerUserPm = maxAccountsPerUserPm;
         this.users = new ArrayList<User>(usersToCreate);
-        client = new HBaseClient();
+        this.client = client;
     }
 
     /**

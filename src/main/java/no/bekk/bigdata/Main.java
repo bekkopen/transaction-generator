@@ -1,5 +1,7 @@
 package no.bekk.bigdata;
 
+import no.bekk.bigdata.database.HBaseClient;
+
 import java.io.IOException;
 
 public class Main {
@@ -87,7 +89,7 @@ public class Main {
         TransactionGenerator generator = new TransactionGenerator(logging, generateTransactions, dryrun,
                                                                   transactionsToGenerate, startYear, numberOfYears,
                                                                   usersToCreate, maxAccountsPerUserBm,
-                                                                  maxAccountsPerUserPm);
+                                                                  maxAccountsPerUserPm, new HBaseClient());
         generator.goCrazy();
     }
 }
