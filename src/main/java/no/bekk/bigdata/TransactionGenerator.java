@@ -1,12 +1,16 @@
 package no.bekk.bigdata;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Random;
 
 public class TransactionGenerator {
     private final static SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
@@ -17,7 +21,7 @@ public class TransactionGenerator {
     private static boolean generateTransactions = true;
     private static boolean dryrun = false; // set this to true to generate data without inserting into database
 
-    private static long TRANSACTIONS_TO_GENERATE = 600000000; //600 millions = 120 millions pr year over 5 years
+    private static long TRANSACTIONS_TO_GENERATE = 60000000; //60 millions = 12 millions pr year over 5 years
     private static int START_YEAR = 2008;
     private static int NUMBER_OF_YEARS = 5;
 
@@ -72,7 +76,7 @@ public class TransactionGenerator {
     /**
      * Yeah baby, let's overload the system!
      */
-    public void goCrazy() {
+    public void goCrazy() throws IOException {
         long startTime = System.currentTimeMillis();
 
         // Precalculate metadata
@@ -118,7 +122,7 @@ public class TransactionGenerator {
         transactionsPerDay = (long) Math.floor(TRANSACTIONS_TO_GENERATE / days);
 
         if (logging) {
-            System.out.printf("Transactions to create per month: %d", transactionsPerDay);
+            System.out.printf("Transactions to create per month: %d\n", transactionsPerDay);
         }
 
         long transactions = 0;
@@ -150,10 +154,11 @@ public class TransactionGenerator {
             long milliseconds = (System.currentTimeMillis() - dayStartTime);
             if (logging) {
                 System.out.printf(
-                        "%s: Created %d transactions in %d ms, total is %d\n",
+                        "%s: Created %d transactions in %d ms (%d transactions per second), total is %d. \n",
                         dateFormatter.format(date),
                         transactionsPerDay,
                         milliseconds,
+                        1000 * transactionsPerDay/milliseconds,
                         transactionsCreated);
             }
         }
@@ -238,40 +243,33 @@ public class TransactionGenerator {
         return accountPrefixes.get(random.nextInt(ACCOUNT_PREFIXES_TO_CREATE)) + (1000000 + random.nextInt(9000000));
     }
 
-    private void loadWordlist() {
+    private void loadWordlist() throws IOException {
         System.out.println("Loading dictionary");
-        try {
-            String file = "words.txt";
-            BufferedReader reader = new BufferedReader(new FileReader(file));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                words.add(line);
-            }
-            reader.close();
-            wordCount = words.size();
-        } catch (IOException e) {
-            //I don't care...
+        BufferedReader reader = new BufferedReader(
+                new InputStreamReader(TransactionGenerator.class.getResourceAsStream("/words.txt")));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            words.add(line);
         }
+        reader.close();
+        wordCount = words.size();
         if (logging) {
             System.out.printf("%d words loaded\n", wordCount);
         }
     }
 
 
-    private void loadTransactionCodes() {
+    private void loadTransactionCodes() throws IOException {
         System.out.println("Loading transaction codes");
-        try {
-            String file = "transkoder.csv";
-            BufferedReader reader = new BufferedReader(new FileReader(file));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                transCodes.add(line);
-            }
-            reader.close();
-            transCodeCount = transCodes.size();
-        } catch (IOException e) {
-            //I don't care...
+        BufferedReader reader = new BufferedReader(
+                new InputStreamReader(TransactionGenerator.class.getResourceAsStream("/transkoder.csv")));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            transCodes.add(line);
         }
+        reader.close();
+        transCodeCount = transCodes.size();
+
         if (logging) {
             System.out.printf("%d transaction codes loaded\n", transCodeCount);
         }

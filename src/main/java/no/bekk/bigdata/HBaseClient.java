@@ -2,7 +2,11 @@ package no.bekk.bigdata;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.HColumnDescriptor;
+import org.apache.hadoop.hbase.HTableDescriptor;
+import org.apache.hadoop.hbase.TableNotFoundException;
 import org.apache.hadoop.hbase.client.Get;
+import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
@@ -16,7 +20,28 @@ public class HBaseClient {
     public HBaseClient() throws IOException {
 
         Configuration config = HBaseConfiguration.create();
-        table = new HTable(config, "transactionTable");
+        try {
+            table = new HTable(config, "transactionTable");
+        } catch (TableNotFoundException e) {
+            HBaseAdmin hbase = new HBaseAdmin(config);
+            HTableDescriptor desc = new HTableDescriptor("transactionTable");
+            HColumnDescriptor meta[] = new HColumnDescriptor[]{
+                    new HColumnDescriptor(Bytes.toBytes("date")),
+                    new HColumnDescriptor(Bytes.toBytes("amount")),
+                    new HColumnDescriptor(Bytes.toBytes("description")),
+                    new HColumnDescriptor(Bytes.toBytes("accountNumber")),
+                    new HColumnDescriptor(Bytes.toBytes("transactionCode")),
+                    new HColumnDescriptor(Bytes.toBytes("valuteringDate")),
+                    new HColumnDescriptor(Bytes.toBytes("posteringDate")),
+                    new HColumnDescriptor(Bytes.toBytes("bokforingDate")),
+                    new HColumnDescriptor(Bytes.toBytes("details"))
+            };
+            for (HColumnDescriptor column : meta) {
+                desc.addFamily(column);
+            }
+            hbase.createTable(desc);
+            table = new HTable(config, "transactionTable");
+        }
     }
 
     public void insert(Transaction trans) throws IOException {
