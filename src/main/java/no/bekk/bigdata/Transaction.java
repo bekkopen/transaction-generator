@@ -48,4 +48,8 @@ public class Transaction
                     "\n numbericalReference='" + numbericalReference + "\'\n" +
                     '}';
         }
+
+        public String getAccountNumber() {
+            return accountNumber.toString();
+        }
     }

@@ -1,7 +1,5 @@
 package no.bekk.bigdata;
 
-import no.bekk.bigdata.database.DatabaseClient;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -11,14 +9,9 @@ public class Generator {
     private final TransactionGenerator generator;
 
     // User controllable parameters:
-    private final boolean logging;
-    private final boolean generateTransactions;
-    private final boolean dryrun;
+    Parameters parameters;
 
-    private final int usersToCreate;
-    private final int maxAccountsPerUserPm;
-    private final int maxAccountsPerUserBm;
-
+    // static parameters
     private static final int MAX_ACCOUNT_PREFIXES_PER_USER_PM = 3;
     private static final int MAX_ACCOUNT_PREFIXES_PER_USER_BM = 10;
     private static final int PERCENTAGE_PM_USERS = 85;
@@ -38,20 +31,10 @@ public class Generator {
     private static long transactionsPerDay = 0;
 
 
-    public Generator(boolean logging, boolean generateTransactions, boolean dryrun,
-                     long transactionsToGenerate, int startYear, int numberOfYears,
-                     int usersToCreate, int maxAccountsPerUserBm, int maxAccountsPerUserPm,
-                     DatabaseClient client) throws
-                                                                                                       IOException {
-        this.logging = logging;
-        this.generateTransactions = generateTransactions;
-        this.dryrun = dryrun;
-        this.usersToCreate = usersToCreate;
-        this.maxAccountsPerUserBm = maxAccountsPerUserBm;
-        this.maxAccountsPerUserPm = maxAccountsPerUserPm;
 
-        this.generator = new TransactionGenerator(startYear, numberOfYears, transactionsToGenerate, transactionsPerDay, transactionsCreated,
-                                            client, dryrun);
+    public Generator(Parameters parameters, TransactionSink sink) throws IOException {
+        this.parameters = parameters;
+        this.generator = new TransactionGenerator(parameters, sink, transactionsPerDay, transactionsCreated);
     }
 
     /**
@@ -69,18 +52,18 @@ public class Generator {
         // Generate users with accounts (users are only needed to know what accounts to ask for when doing research later
         generateUsersAndAccounts();
 
-        if (generateTransactions) {
+        if (parameters.generateTransactions) {
             generator.generateTransactions();
         }
 
-        if (!dryrun) {
+        if (!parameters.dryrun) {
             storeUsersAndAccounts();
         }
 
         calculateStatistics();
 
         long seconds = (System.currentTimeMillis() - startTime) / 1000;
-        if (logging) {
+        if (parameters.logging) {
             System.out.println("Program completed in " + seconds + " seconds");
         }
     }
@@ -115,7 +98,7 @@ public class Generator {
         }
         reader.close();
         wordCount = Utils.words.size();
-        if (logging) {
+        if (parameters.logging) {
             System.out.printf("%d words loaded\n", wordCount);
         }
     }
@@ -132,7 +115,7 @@ public class Generator {
         reader.close();
         transCodeCount = Utils.transCodes.size();
 
-        if (logging) {
+        if (parameters.logging) {
             System.out.printf("%d transaction codes loaded\n", transCodeCount);
         }
     }
@@ -145,7 +128,7 @@ public class Generator {
         for (int i = 0; i < DESCRIPTIONS_TO_CREATE; i++) {
             Utils.descriptions.add(getRandomSentence(1 + Utils.random.nextInt(3)));
         }
-        if (logging) {
+        if (parameters.logging) {
             System.out.printf("%d descriptions created\n", DESCRIPTIONS_TO_CREATE);
         }
     }
@@ -154,13 +137,13 @@ public class Generator {
      * Create a list of unique transaction texts/descriptions, each containing from 1 to 3 words.
      */
     private void generateAccountPrefixes() {
-        if (logging) {
+        if (parameters.logging) {
             System.out.println("Creating account prefixes");
         }
         for (int i = 0; i < Utils.ACCOUNT_PREFIXES_TO_CREATE; i++) {
             Utils.accountPrefixes.add("" + (1000 + Utils.random.nextInt(9000)));
         }
-        if (logging) {
+        if (parameters.logging) {
             System.out.printf("%d account prefixes created\n", Utils.ACCOUNT_PREFIXES_TO_CREATE);
         }
     }
@@ -182,15 +165,15 @@ public class Generator {
     }
 
     private void generateUsersAndAccounts() {
-        if (logging) {
-            System.out.println("Going to create " + usersToCreate + " users");
+        if (parameters.logging) {
+            System.out.println("Going to create " + parameters.usersToCreate + " users");
         }
 
-        for (int i = 0; i < usersToCreate; i++) {
+        for (int i = 0; i < parameters.usersToCreate; i++) {
             boolean isPm = Utils.random.nextInt(100) < PERCENTAGE_PM_USERS;
 
             // for the time being the number of accounts for a user is linearly distributed
-            int numberOfAccounts = Utils.random.nextInt(isPm ? maxAccountsPerUserPm : maxAccountsPerUserBm);
+            int numberOfAccounts = Utils.random.nextInt(isPm ? parameters.maxAccountsPerUserPm : parameters.maxAccountsPerUserBm);
             int numberOfAccountPrefixes =
                     (1 + Utils.random.nextInt(isPm ? MAX_ACCOUNT_PREFIXES_PER_USER_PM : MAX_ACCOUNT_PREFIXES_PER_USER_BM));
             int accountsPerPrefix = (int) Math.floor(numberOfAccounts / numberOfAccountPrefixes);
@@ -222,12 +205,12 @@ public class Generator {
             }
             // if (logging) System.out.println("Created " + user.accounts.size() + " accounts for user " + user.id);
             if (i % 1000 == 0) {
-                if (logging) {
+                if (parameters.logging) {
                     System.out.println(Utils.users.size() + " users and " + Utils.accounts.size() + " accounts created");
                 }
             }
         }
-        if (logging) {
+        if (parameters.logging) {
             System.out.println("Created " + Utils.users.size() + " users and " + Utils.accounts.size() + " accounts");
         }
     }

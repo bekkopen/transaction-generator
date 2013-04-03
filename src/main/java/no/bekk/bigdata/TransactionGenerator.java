@@ -1,8 +1,5 @@
 package no.bekk.bigdata;
 
-import no.bekk.bigdata.database.DatabaseClient;
-
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
@@ -15,55 +12,52 @@ public class TransactionGenerator {
 
     private final static SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
     
-    private int startYear;
-    private int numberOfYears;
-    private long transactionsToGenerate;
     private long transactionsPerDay;
     private long transactionsCreated;
-    private boolean logging =true;
-    private DatabaseClient client;
-    private boolean dryrun;
+    private final Parameters parameters;
+    private final TransactionSink sink;
 
-    public TransactionGenerator(int startYear, int numberOfYears, long transactionsToGenerate, long transactionsPerDay,
-                                long transactionsCreated, DatabaseClient client, boolean dryrun) {
-        this.startYear = startYear;
-        this.numberOfYears = numberOfYears;
-        this.transactionsToGenerate = transactionsToGenerate;
+    public TransactionGenerator(Parameters parameters, TransactionSink sink, long transactionsPerDay, long transactionsCreated) {
+        this.parameters = parameters;
+        this.sink = sink;
         this.transactionsPerDay = transactionsPerDay;
         this.transactionsCreated = transactionsCreated;
-        this.client = client;
-        this.dryrun = dryrun;
     }
 
     void generateTransactions() {
 
         // calculate the number of days to create transactions for
         Calendar calendar = Calendar.getInstance();
-        calendar.set(startYear, Calendar.JANUARY, 1, 0, 0, 0);
+        calendar.set(parameters.startYear, Calendar.JANUARY, 1, 0, 0, 0);
 
         Calendar endCalendar = Calendar.getInstance();
-        endCalendar.set(startYear + numberOfYears, Calendar.JANUARY, 1, 0, 0, 0);
+        endCalendar.set(parameters.startYear + parameters.numberOfYears, Calendar.JANUARY, 1, 0, 0, 0);
 
         int days = (int) ((endCalendar.getTimeInMillis() - calendar.getTimeInMillis()) / (1000.0 * 60 * 60 * 24));
-        if (logging) {
+        if (parameters.logging) {
             System.out.println("Total number of days to create transactions for: " + days);
         }
 
-        transactionsPerDay = (long) Math.floor(transactionsToGenerate / days);
+        transactionsPerDay = (long) Math.floor(parameters.transactionsToGenerate / days);
 
-        if (logging) {
+        if (parameters.logging) {
             System.out.printf("Transactions to create per month: %d\n", transactionsPerDay);
         }
 
         long transactions = 0;
 
-
+        long startTime = System.currentTimeMillis();
         for (int day = 0; day < days; day++) {
             transactions = createTransactionsForOneDay(calendar, transactions);
         }
+        long runtTime = System.currentTimeMillis() - startTime;
 
-        if (logging) {
-            System.out.println("Finished transaction creation, " + transactionsCreated + " created");
+        if (parameters.logging) {
+            System.out.println(String.format("Finished transaction creation, %d created in %d s. Closing sink...", transactionsCreated, runtTime));
+        }
+        sink.close();
+        if (parameters.logging) {
+            System.out.println("Sink closed");
         }
     }
 
@@ -72,7 +66,7 @@ public class TransactionGenerator {
         long dayStartTime = System.currentTimeMillis();
 
         // Just for fun
-        if (logging && calendar.get(Calendar.DAY_OF_MONTH) == 29 && calendar.get(Calendar.MONTH) == Calendar.FEBRUARY) {
+        if (parameters.logging && calendar.get(Calendar.DAY_OF_MONTH) == 29 && calendar.get(Calendar.MONTH) == Calendar.FEBRUARY) {
             System.out.println(calendar.get(Calendar.YEAR) + " was a leap year!");
         }
 
@@ -86,7 +80,7 @@ public class TransactionGenerator {
                                                         Utils.getNextAccount(),
                                                         Utils.getTransCode());
 
-            if (!dryrun) {
+            if (!parameters.dryrun) {
                 storeTransaction(transaction);
             }
             transactions++;
@@ -96,7 +90,10 @@ public class TransactionGenerator {
         calendar.add(Calendar.DAY_OF_YEAR, 1);
 
         long milliseconds = (System.currentTimeMillis() - dayStartTime);
-        if (logging) {
+        if(milliseconds == 0){
+            milliseconds++;
+        }
+        if (parameters.logging) {
             System.out.printf(
                     "%s: Created %d transactions in %d ms (%d transactions per second), total is %d. \n",
                     dateFormatter.format(date),
@@ -158,13 +155,8 @@ public class TransactionGenerator {
     /**
      * Implement this to add data to database
      * @param transaction
-     * @param transactionGenerator
      */
     private void storeTransaction(Transaction transaction) {
-        try {
-            client.insert(transaction);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            sink.insert(transaction);
     }
 }

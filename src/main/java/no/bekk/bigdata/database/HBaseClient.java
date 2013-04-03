@@ -1,6 +1,8 @@
 package no.bekk.bigdata.database;
 
+import no.bekk.bigdata.Parameters;
 import no.bekk.bigdata.Transaction;
+import no.bekk.bigdata.TransactionSink;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
@@ -15,7 +17,7 @@ import org.apache.hadoop.hbase.util.Bytes;
 
 import java.io.IOException;
 
-public class HBaseClient implements DatabaseClient {
+public class HBaseClient implements TransactionSink {
     private HTable table;
 
     public HBaseClient() throws IOException {
@@ -46,7 +48,7 @@ public class HBaseClient implements DatabaseClient {
     }
 
     @Override
-    public void insert(Transaction trans) throws IOException {
+    public void insert(Transaction trans) {
 
         Put p = new Put(Bytes.toBytes(trans.id));
 
@@ -69,10 +71,27 @@ public class HBaseClient implements DatabaseClient {
         p.add(Bytes.toBytes("details"), Bytes.toBytes("batchNumber"), Bytes.toBytes(trans.batchNumber));
         p.add(Bytes.toBytes("details"), Bytes.toBytes("archiveReference"), Bytes.toBytes(trans.archiveReference));
         p.add(Bytes.toBytes("details"), Bytes.toBytes("numbericalReference"), Bytes.toBytes(trans.numbericalReference));
-        table.put(p);
+
+        try {
+            table.put(p);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     @Override
+    public void close() {
+        try {
+            table.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void setParameters(Parameters parameters) {}
+
     public String retrieve(String key, String family, String qualifier) throws IOException {
         Get g = new Get(Bytes.toBytes(key));
         Result r = table.get(g);
