@@ -1,5 +1,6 @@
 package no.bekk.bigdata;
 
+import no.bekk.bigdata.elasticsearch.ElasticSearchSink;
 import no.bekk.bigdata.solr.MultiSolrIndexer;
 import no.bekk.bigdata.solr.SolrCloudIndexer;
 import no.bekk.bigdata.solr.SolrIndexer;
@@ -95,6 +96,9 @@ public class Main {
                         break;
                     case "multisolr":
                         parameters.sink = MultiSolrIndexer.class;
+                        break;
+                    case "elasticsearch":
+                        parameters.sink = ElasticSearchSink.class;
                         break;
                 }
 

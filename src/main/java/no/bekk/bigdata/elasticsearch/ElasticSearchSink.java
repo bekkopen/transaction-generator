@@ -4,6 +4,7 @@ import com.sun.xml.bind.v2.TODO;
 import no.bekk.bigdata.Parameters;
 import no.bekk.bigdata.Transaction;
 import no.bekk.bigdata.TransactionSink;
+import org.codehaus.jackson.map.ObjectMapper;
 
 import java.util.ArrayList;
 
@@ -24,7 +25,7 @@ public class ElasticSearchSink implements TransactionSink {
     public void insert(Transaction trans) {
         this.trans.add(trans);
         if (this.trans.size() >= limit){
-            close();
+            flush();
             this.trans.clear();
         }
     }
@@ -55,20 +56,23 @@ public class ElasticSearchSink implements TransactionSink {
     }
 
     private String transactionToJSON(Transaction transaction) {
-        String JSON = ""; //get an addon (jackson objectmapper)
-        /*JSON = String.format("accountNumber: \"%i\"", transaction.accountNumber);
-        JSON.concat(String.format("amount: \"%i\"", transaction.amount));
-        JSON.concat(String.format("archiveReference: \"%i\"", transaction.archiveReference));
-        JSON.concat(String.format("batchNumber: \"%i\"", transaction.batchNumber));
-        JSON.concat(String.format("bokforingDate: \"%i\"", transaction.bokforingDate));
-        JSON.concat(String.format("currencyAmount: \"%i\"", transaction.currencyAmount));
-        JSON.concat(String.format("currencyCode: \"%i\"", transaction.currencyCode));
-        JSON.concat(String.format("date: \"%i\"", transaction.date));
-        JSON.concat(String.format("description: \"%i\"", transaction.description));
-        JSON.concat(String.format("fullDescription: \"%i\"", transaction.fullDescription));
-        JSON.concat(String.format("id: \"%i\"", transaction.id));
-        JSON.concat(String.format("isConfidential: \"%i\"", transaction.isConfidential));
-        JSON.concat(String.format("numbericalReference: \"%s\"", transaction.numbericalReference));*/
-        return JSON;
+        ObjectMapper mapper = new ObjectMapper();
+
+        try {
+            return mapper.writeValueAsString(transaction);
+        } catch(Exception e) {
+            return "IO Error: " + e.getMessage();
+        }
+
+    }
+
+    private boolean flush() {
+        String buf = "{";
+        for (Transaction t : trans) {
+            buf += "" + t.id + ":" + transactionToJSON(t);
+        }
+        buf += "}";
+        System.out.print(buf);
+        return true;
     }
 }
