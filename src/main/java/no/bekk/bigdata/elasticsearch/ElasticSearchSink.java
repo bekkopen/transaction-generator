@@ -19,6 +19,7 @@ import java.util.ArrayList;
  * To change this template use File | Settings | File Templates.
  */
 public class ElasticSearchSink implements TransactionSink {
+    // git change!
     private Parameters parameters;
     private ArrayList<Transaction> trans = new ArrayList<>();
     private int limit = 100;
