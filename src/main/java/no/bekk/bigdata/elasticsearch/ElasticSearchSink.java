@@ -39,6 +39,19 @@ public class ElasticSearchSink implements TransactionSink {
     public void close() {
         //To change body of implemented methods use File | Settings | File Templates.
         //On close send transaction
+        /*
+        int port = 9200;
+        String host = "bigdata01.dev.bekk.no";
+        String msg = "";
+
+        URL url = new URL("http://"+host+":"+port);
+        HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+        conn.setDoOutput(true);
+        conn.setRequestMethod("PUT");
+        OutputStreamWriter out = new OutputStreamWriter(conn.getOutPutStream());
+        out.write(msg);
+        out.close();
+         */
     }
 
     private String transactionToJSON(Transaction transaction) {
