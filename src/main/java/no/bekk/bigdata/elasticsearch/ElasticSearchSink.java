@@ -4,7 +4,11 @@ import com.sun.xml.bind.v2.TODO;
 import no.bekk.bigdata.Parameters;
 import no.bekk.bigdata.Transaction;
 import no.bekk.bigdata.TransactionSink;
+import org.elasticsearch.action.bulk.BulkRequestBuilder;
 
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 
 /**
@@ -15,7 +19,6 @@ import java.util.ArrayList;
  * To change this template use File | Settings | File Templates.
  */
 public class ElasticSearchSink implements TransactionSink {
-
     private Parameters parameters;
     private ArrayList<Transaction> trans = new ArrayList<>();
     private int limit = 100;
