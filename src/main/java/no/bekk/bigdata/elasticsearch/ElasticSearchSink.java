@@ -5,8 +5,12 @@ import no.bekk.bigdata.Parameters;
 import no.bekk.bigdata.Transaction;
 import no.bekk.bigdata.TransactionSink;
 import org.codehaus.jackson.map.ObjectMapper;
-
-import java.util.ArrayList;
+import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.transport.InetSocketTransportAddress;
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,63 +20,54 @@ import java.util.ArrayList;
  * To change this template use File | Settings | File Templates.
  */
 public class ElasticSearchSink implements TransactionSink {
-
+    private final int limit = 1000;
     private Parameters parameters;
-    private ArrayList<Transaction> trans = new ArrayList<>();
-    private int limit = 100;
+    private TransportClient client;
+    private BulkRequestBuilder bulk;
 
     @Override
     public void insert(Transaction trans) {
-        this.trans.add(trans);
-        if (this.trans.size() >= limit){
+        bulk.add(client.prepareIndex("sb1", "transer", "" + trans.id)
+                .setSource(transactionToJSON(trans)));
+        if (bulk.numberOfActions() >= limit) {
             flush();
-            this.trans.clear();
         }
     }
 
     @Override
     public void setParameters(Parameters parameters) {
         this.parameters = parameters;
-        //build html string
+        Settings settings = ImmutableSettings.settingsBuilder()
+                .put("cluster.name", "TransactionCluster")
+                .build();
+        client = new TransportClient(settings);
+        System.out.println("Connecting to: " + parameters.zkHost);
+        String[] tokens = parameters.zkHost.split(":");
+        client.addTransportAddress(new InetSocketTransportAddress(tokens[0], Integer.parseInt(tokens[1])));
+        bulk = client.prepareBulk();
     }
 
     @Override
     public void close() {
-        //To change body of implemented methods use File | Settings | File Templates.
-        //On close send transaction
-        /*
-        int port = 9200;
-        String host = "bigdata01.dev.bekk.no";
-        String msg = "";
-
-        URL url = new URL("http://"+host+":"+port);
-        HttpURLConnection conn = (HttpURLConnection)url.openConnection();
-        conn.setDoOutput(true);
-        conn.setRequestMethod("PUT");
-        OutputStreamWriter out = new OutputStreamWriter(conn.getOutPutStream());
-        out.write(msg);
-        out.close();
-         */
+        flush();
+        client.close();
     }
 
     private String transactionToJSON(Transaction transaction) {
         ObjectMapper mapper = new ObjectMapper();
-
         try {
             return mapper.writeValueAsString(transaction);
         } catch(Exception e) {
             return "IO Error: " + e.getMessage();
         }
-
     }
 
     private boolean flush() {
-        String buf = "{";
-        for (Transaction t : trans) {
-            buf += "" + t.id + ":" + transactionToJSON(t);
+        BulkResponse resp = bulk.execute().actionGet();
+        if (resp.hasFailures()) {
+            throw new RuntimeException(resp.buildFailureMessage());
         }
-        buf += "}";
-        System.out.print(buf);
+        bulk = client.prepareBulk();
         return true;
     }
 }

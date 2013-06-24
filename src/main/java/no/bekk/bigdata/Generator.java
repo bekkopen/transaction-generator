@@ -1,6 +1,7 @@
 package no.bekk.bigdata;
 
 import java.io.BufferedReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -56,9 +57,7 @@ public class Generator {
             generator.generateTransactions();
         }
 
-        if (!parameters.dryrun) {
-            storeUsersAndAccounts();
-        }
+        storeUsersAndAccounts();
 
         calculateStatistics();
 
@@ -260,9 +259,29 @@ public class Generator {
 
 
     /**
-     * Implement this to add users and accounts to database (necessary for statistics etc. later)
+     * Implement this to add users and accounts to file (necessary for statistics etc. later)
      */
-    private void storeUsersAndAccounts() {
-        //TODO: Add DB code here
+    private void storeUsersAndAccounts() throws IOException {
+        FileWriter fileWriter = new FileWriter("generatedAccounts.csv");
+
+        fileWriter.append("account, numTrans\n");
+        for (Account account : Utils.accounts) {
+            fileWriter.append(account.accountNumber + ", ");
+            fileWriter.append(account.numberOfTransactions + "\n");
+        }
+        fileWriter.flush();
+        fileWriter.close();
+
+        fileWriter = new FileWriter("generatedUsers.csv");
+
+        fileWriter.append("user, numAccounts\n");
+        for (User user : Utils.users) {
+            fileWriter.append(user.id + ",");
+            fileWriter.append(user.accounts.size() + "\n");
+        }
+        fileWriter.flush();
+        fileWriter.close();
+
+        System.out.println("Users and accounts saved to .csv!");
     }
 }
