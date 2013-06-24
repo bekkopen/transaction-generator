@@ -1,0 +1,12 @@
+Different java versions on server/client cause serialization issues for Elastic search Java API.
+
+What to look at in elastic search config files:
+cluster name: all nodes with the same cluster name on the same network will join the same cluster.
+master: id this server is allowed to be a master. Masters receive requests and coordinate the cluster.
+data: whether this server will store data, or just pull data from other node to do load-balancing.
+Need to look up a good config of these for a larger cluster.
+
+How to add oracle jvm on debian server:
+
+
+
