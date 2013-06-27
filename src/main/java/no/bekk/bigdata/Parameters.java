@@ -13,6 +13,7 @@ public class Parameters {
     public static boolean DEFAULT_LOGGING = true;
     public static boolean DEFAULT_GENERATE_TRANSACTIONS = true;
     public static boolean DEAFULT_DRY_RUN = false; // set this to true to generate data without inserting into database
+    public static boolean DEFAULT_RESUME = false;
     public static long DEFAULT_TRANSACTIONS_TO_GENERATE = 60000000; //60 millions = 12 millions pr year over 5 years
     public static Class<? extends TransactionSink> DEFAULT_SINK = SolrIndexer.class;
     public static String[] DEFAULT_SOLR_URL = new String[]{"http://localhost:8000/solr"};
@@ -22,6 +23,7 @@ public class Parameters {
     public boolean logging = DEFAULT_LOGGING;
     public boolean generateTransactions = DEFAULT_GENERATE_TRANSACTIONS;
     public boolean dryrun = DEAFULT_DRY_RUN;
+    public boolean resume = DEFAULT_RESUME;
     public long transactionsToGenerate = DEFAULT_TRANSACTIONS_TO_GENERATE;
     public int startYear = DEFAULT_START_YEAR;
     public int numberOfYears = DEAFULT_NUMBER_OF_YEARS;
