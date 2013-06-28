@@ -27,10 +27,11 @@ public class Main {
                                    + DEFAULT_MAX_ACCOUNTS_PER_USER_BM);
         System.out.println(" --maxaccpm=XXXXXXX   --- max number of accounts per pm user, defaults to "
                                    + DEFAULT_MAX_ACCOUNTS_PER_USER_PM);
+        System.out.println(" --resume=on  --- Resumes previous session by retrieving random generator from disk. Defaults to off.");
 
-        System.out.println(" --sink=hbase|solr|solrcloud|multisolr  ---- where to output transactions, defaults to hbase");
+        System.out.println(" --sink=hbase|solr|solrcloud|multisolr|elasticsearch  ---- where to output transactions, defaults to hbase");
         System.out.println(" --solrUrl=URL        ---- URL to solr when solr is set as sink. comma-seperated for sink=multisolr Defaults to " + DEFAULT_SOLR_URL);
-        System.out.println(" --zkHost=URL         ---- URL to zookeeper when solrcloud is set as sink. Defaults to " + DEFAULT_SOLR_URL);
+        System.out.println(" --zkHost=URL         ---- URL to zookeeper when solrcloud/elasticsearch is set as sink. Defaults to " + DEFAULT_SOLR_URL);
     }
 
     public static void main(String args[]) throws IOException, IllegalAccessException, InstantiationException {
@@ -102,6 +103,11 @@ public class Main {
                         break;
                 }
 
+            }
+
+            if (param.startsWith("--resume")) {
+                if ("on".equals(value))
+                    parameters.resume = true;
             }
 
             if (param.startsWith("--zkHost")) {

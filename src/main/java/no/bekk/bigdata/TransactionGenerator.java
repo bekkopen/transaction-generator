@@ -30,8 +30,16 @@ public class TransactionGenerator {
         Calendar calendar = Calendar.getInstance();
         calendar.set(parameters.startYear, Calendar.JANUARY, 1, 0, 0, 0);
 
+        if (parameters.resume) {
+            Utils.restoreGeneratorData();
+            Calendar oldCal = Utils.restoredCalendar;
+            if (oldCal != null) {
+                calendar = oldCal;
+            }
+        }
+
         Calendar endCalendar = Calendar.getInstance();
-        endCalendar.set(parameters.startYear + parameters.numberOfYears, Calendar.JANUARY, 1, 0, 0, 0);
+        endCalendar.set(calendar.get(Calendar.YEAR) + parameters.numberOfYears, Calendar.JANUARY, 1, 0, 0, 0);
 
         int days = (int) ((endCalendar.getTimeInMillis() - calendar.getTimeInMillis()) / (1000.0 * 60 * 60 * 24));
         if (parameters.logging) {
@@ -41,14 +49,15 @@ public class TransactionGenerator {
         transactionsPerDay = (long) Math.floor(parameters.transactionsToGenerate / days);
 
         if (parameters.logging) {
-            System.out.printf("Transactions to create per month: %d\n", transactionsPerDay);
+            System.out.printf("Transactions to create per day: %d\n", transactionsPerDay);
         }
 
-        long transactions = 0;
+        long transactions = Utils.restoredCounter; //0 if resume=off
 
         long startTime = System.currentTimeMillis();
         for (int day = 0; day < days; day++) {
             transactions = createTransactionsForOneDay(calendar, transactions);
+            Utils.saveGeneratorData(calendar, transactions); //Save each day in case of crash
         }
         long runtTime = System.currentTimeMillis() - startTime;
 
