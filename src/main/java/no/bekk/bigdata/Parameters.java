@@ -8,8 +8,8 @@ public class Parameters {
     public static final int DEFAULT_START_YEAR = 2008;
     public static final int DEAFULT_NUMBER_OF_YEARS = 5;
     public static final int DEFAULT_USERS_TO_CREATE = 150; //750 000 i reel base, hvorav 500 000 er aktive.
-    public static final int DEFAULT_MAX_ACCOUNTS_PER_USER_BM = 20;
-    public static final int DEFAULT_MAX_ACCOUNTS_PER_USER_PM = 2000;
+    public static final int DEFAULT_MAX_ACCOUNTS_PER_USER_BM = 2000;
+    public static final int DEFAULT_MAX_ACCOUNTS_PER_USER_PM = 20;
     public static boolean DEFAULT_LOGGING = true;
     public static boolean DEFAULT_GENERATE_TRANSACTIONS = true;
     public static boolean DEAFULT_DRY_RUN = false; // set this to true to generate data without inserting into database

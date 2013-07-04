@@ -12,6 +12,8 @@ import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 
+import java.util.Calendar;
+
 /**
  * Created with IntelliJ IDEA.
  * User: andre b. amundsen
@@ -24,11 +26,18 @@ public class ElasticSearchSink implements TransactionSink {
     private Parameters parameters;
     private TransportClient client;
     private BulkRequestBuilder bulk;
+    private Calendar calendar = Calendar.getInstance();
 
     @Override
     public void insert(Transaction trans) {
-        bulk.add(client.prepareIndex("sb1", "transer", "" + trans.id)
-                .setSource(transactionToJSON(trans)));
+        calendar.setTime(trans.date);
+        String index = ""+calendar.get(Calendar.YEAR)+"-"+calendar.get(Calendar.MONTH);
+
+        bulk.add(
+                client.prepareIndex(index, "trans", "" + trans.id)
+                .setSource(transactionToJSON(trans))
+        );
+
         if (bulk.numberOfActions() >= limit) {
             flush();
         }
