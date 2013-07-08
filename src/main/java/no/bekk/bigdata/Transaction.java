@@ -52,4 +52,28 @@ public class Transaction
         public String getAccountNumber() {
             return accountNumber.toString();
         }
+
+        public String toElasticJSON()
+        {
+            return '{' +
+                    "\"id\":" + id +
+                    ",\"date\":" + date.getTime() +
+                    ",\"amount\":" + amount +
+                    ",\"description\":\"" + description + '"' +
+                    ",\"remoteAccountNumber\":" + remoteAccountNumber +
+                    ",\"currencyAmount\":" + currencyAmount +
+                    ",\"currencyCode\":\"" + currencyCode + '"' +
+                    ",\"isConfidential\":" + isConfidential +
+                    ",\"fullDescription\":\"" + fullDescription + '"' +
+                    ",\"transactionCodeText\":\"" + transactionCodeText + '"' +
+                    ",\"transactionCode\":\"" + transactionCode + '"' +
+                    ",\"valuteringDate\":" + valuteringDate.getTime() +
+                    ",\"posteringDate\":" + posteringDate.getTime() +
+                    ",\"bokforingDate\":" + bokforingDate.getTime() +
+                    ",\"batchNumber\":\"" + batchNumber + '"' +
+                    ",\"archiveReference\":\"" + archiveReference + '"' +
+                    ",\"numbericalReference\":\"" + numbericalReference + '"' +
+                    ",\"accountNumber\":" + accountNumber +
+                    '}';
+        }
     }

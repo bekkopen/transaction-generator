@@ -1,5 +1,6 @@
 package no.bekk.bigdata.elasticsearch;
 
+import no.bekk.bigdata.Main;
 import no.bekk.bigdata.Parameters;
 import no.bekk.bigdata.Transaction;
 import no.bekk.bigdata.TransactionSink;
@@ -22,29 +23,44 @@ import java.util.Calendar;
  * To change this template use File | Settings | File Templates.
  */
 public class ElasticSearchSink implements TransactionSink {
-    private final int limit = 1000;
+    private final boolean DEBUG;
+    private final int LIMIT;
     private Parameters parameters;
     private TransportClient client;
     private BulkRequestBuilder bulk;
-    private Calendar calendar = Calendar.getInstance();
+    private Calendar calendar;
+    
+    public ElasticSearchSink() {
+        DEBUG = Main.debug();
+        LIMIT = 1000;
+        calendar = Calendar.getInstance();
+    }
 
     @Override
     public void insert(Transaction trans) {
         calendar.setTime(trans.date);
         SimpleDateFormat indexFormat = new SimpleDateFormat("yyyy-MM");
         String index = indexFormat.format(calendar.getTimeInMillis());
-        bulk.add(
-                client.prepareIndex(index, "trans", "" + trans.id)
-                .setSource(transactionToJSON(trans)).setRouting(trans.getAccountNumber())
-        );
+        String body = trans.toElasticJSON();
 
-        if (bulk.numberOfActions() >= limit) {
-            flush();
+        if (Main.debug()) {
+            System.out.println(body);
+        } else {
+            bulk.add(
+                    client.prepareIndex(index, "trans", "" + trans.id)
+                            .setSource(body).setRouting(trans.getAccountNumber())
+            );
+
+            if (bulk.numberOfActions() >= LIMIT) {
+                flush();
+            }
         }
     }
 
     @Override
     public void setParameters(Parameters parameters) {
+        if (DEBUG) return;
+
         this.parameters = parameters;
         Settings settings = ImmutableSettings.settingsBuilder()
                 .put("cluster.name", "TransactionCluster")

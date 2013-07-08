@@ -10,6 +10,11 @@ import java.io.IOException;
 import static no.bekk.bigdata.Parameters.*;
 
 public class Main {
+    private static boolean debug = false;
+
+    public static boolean debug() {
+        return debug;
+    }
 
 
     private static void printHelp() {
@@ -103,6 +108,10 @@ public class Main {
                         break;
                 }
 
+            }
+
+            if (param.equals("--debug")) {
+                debug = true;
             }
 
             if (param.startsWith("--resume")) {

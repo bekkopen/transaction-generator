@@ -13,6 +13,16 @@ export JAVA_HOME=/usr/lib/jvm/java-7-oracle
 (Source: http://www.webupd8.org/2012/06/how-to-install-oracle-java-7-in-debian.html)
 
 
+*** INCREASE NUMBER OF OPEN FILES ***
+Elasticsearch requires to have a lot of files open simultaneously.
+To increase the limit, add lines to /etc/security/limits.conf:
+<username>            soft    nofile          32000
+<username>            hard    nofile          32000
+Where <username> is the name of the user running elasticsearch.
+
+(Source: http://www.elasticsearch.org/tutorials/too-many-open-files/)
+
+
 *** MISC ***
 Once an index has been created, it's number of shards cannot be changed (Without re-indexing the data).
 
