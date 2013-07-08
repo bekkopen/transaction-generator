@@ -1,6 +1,5 @@
 package no.bekk.bigdata.elasticsearch;
 
-import com.sun.xml.bind.v2.TODO;
 import no.bekk.bigdata.Parameters;
 import no.bekk.bigdata.Transaction;
 import no.bekk.bigdata.TransactionSink;
@@ -12,6 +11,7 @@ import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 /**
@@ -31,11 +31,11 @@ public class ElasticSearchSink implements TransactionSink {
     @Override
     public void insert(Transaction trans) {
         calendar.setTime(trans.date);
-        String index = ""+calendar.get(Calendar.YEAR)+"-"+calendar.get(Calendar.MONTH);
-
+        SimpleDateFormat indexFormat = new SimpleDateFormat("yyyy-MM");
+        String index = indexFormat.format(calendar.getTimeInMillis());
         bulk.add(
                 client.prepareIndex(index, "trans", "" + trans.id)
-                .setSource(transactionToJSON(trans))
+                .setSource(transactionToJSON(trans)).setRouting(trans.getAccountNumber())
         );
 
         if (bulk.numberOfActions() >= limit) {
