@@ -1,7 +1,5 @@
 package no.bekk.bigdata;
 
-import no.bekk.bigdata.solr.MultiSolrIndexer;
-import no.bekk.bigdata.solr.SolrCloudIndexer;
 import no.bekk.bigdata.solr.SolrIndexer;
 
 public class Parameters {
@@ -13,12 +11,13 @@ public class Parameters {
     public static boolean DEFAULT_LOGGING = true;
     public static boolean DEFAULT_GENERATE_TRANSACTIONS = true;
     public static boolean DEAFULT_DRY_RUN = false; // set this to true to generate data without inserting into database
-    public static boolean DEFAULT_RESUME = false;
+    public static boolean DEFAULT_RESUME = false; // set this to read random gen, calendar and last id from disk
     public static long DEFAULT_TRANSACTIONS_TO_GENERATE = 60000000; //60 millions = 12 millions pr year over 5 years
     public static Class<? extends TransactionSink> DEFAULT_SINK = SolrIndexer.class;
     public static String[] DEFAULT_SOLR_URL = new String[]{"http://localhost:8000/solr"};
-    public static String DEFAULT_ZK_HOST = "localhost:9983";
     public static final String DEFAULT_ES_INDEX_FORMAT = "yyyy-MM";
+    public static String DEFAULT_HOST = "localhost:9983";
+    public static String DEFAULT_CLUSTER_NAME = "TransactionCluster"; // cluster name for elastic search
 
 
     public boolean logging = DEFAULT_LOGGING;
@@ -33,6 +32,7 @@ public class Parameters {
     public int maxAccountsPerUserBm = DEFAULT_MAX_ACCOUNTS_PER_USER_BM;
     public Class<? extends TransactionSink> sink = DEFAULT_SINK;
     public String[] solrUrl =  DEFAULT_SOLR_URL;
-    public String zkHost = DEFAULT_ZK_HOST;
     public String esindexformat = DEFAULT_ES_INDEX_FORMAT;
+    public String host = DEFAULT_HOST;
+    public String clusterName = DEFAULT_CLUSTER_NAME;
 }

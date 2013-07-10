@@ -64,8 +64,8 @@ public class Transaction
                     ",\"currencyAmount\":" + currencyAmount +
                     ",\"currencyCode\":\"" + currencyCode + '"' +
                     ",\"isConfidential\":" + isConfidential +
-                    ",\"fullDescription\":\"" + fullDescription + '"' +
-                    ",\"transactionCodeText\":\"" + transactionCodeText + '"' +
+    //                ",\"fullDescription\":\"" + fullDescription + '"' + // this is just desc + date and some numbers
+    //                ",\"transactionCodeText\":\"" + transactionCodeText + '"' + //can be 1 to 1 mapping to transCode
                     ",\"transactionCode\":\"" + transactionCode + '"' +
                     ",\"valuteringDate\":" + valuteringDate.getTime() +
                     ",\"posteringDate\":" + posteringDate.getTime() +

@@ -36,7 +36,7 @@ public class Main {
 
         System.out.println(" --sink=hbase|solr|solrcloud|multisolr|elasticsearch  ---- where to output transactions, defaults to hbase");
         System.out.println(" --solrUrl=URL        ---- URL to solr when solr is set as sink. comma-seperated for sink=multisolr Defaults to " + DEFAULT_SOLR_URL);
-        System.out.println(" --zkHost=URL         ---- URL to zookeeper when solrcloud/elasticsearch is set as sink. Defaults to " + DEFAULT_SOLR_URL);
+        System.out.println(" --host=URL         ---- URL to zookeeper when solrcloud/elasticsearch is set as sink. Defaults to " + DEFAULT_SOLR_URL);
     }
 
     public static void main(String args[]) throws IOException, IllegalAccessException, InstantiationException {
@@ -119,8 +119,8 @@ public class Main {
                     parameters.resume = true;
             }
 
-            if (param.startsWith("--zkHost")) {
-                parameters.zkHost = value.trim();
+            if (param.startsWith("--host")) {
+                parameters.host = value.trim();
             }
 
             if (param.startsWith("--solrUrl")) {
@@ -129,6 +129,10 @@ public class Main {
 
             if (param.startsWith("--esindexformat")) {
                 parameters.esindexformat = value.trim();
+            }
+            
+            if (param.startsWith("--clustername")) {
+                parameters.clusterName = value.trim();
             }
 
         }
