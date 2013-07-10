@@ -63,11 +63,11 @@ public class ElasticSearchSink implements TransactionSink {
 
         this.parameters = parameters;
         Settings settings = ImmutableSettings.settingsBuilder()
-                .put("cluster.name", "TransactionCluster")
+                .put("cluster.name", parameters.clusterName)
                 .build();
         client = new TransportClient(settings);
-        System.out.println("Connecting to: " + parameters.zkHost);
-        String[] tokens = parameters.zkHost.split(":");
+        System.out.println("Connecting to: " + parameters.host);
+        String[] tokens = parameters.host.split(":");
         client.addTransportAddress(new InetSocketTransportAddress(tokens[0], Integer.parseInt(tokens[1])));
         bulk = client.prepareBulk();
     }
