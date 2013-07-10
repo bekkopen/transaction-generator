@@ -18,6 +18,7 @@ public class Parameters {
     public static Class<? extends TransactionSink> DEFAULT_SINK = SolrIndexer.class;
     public static String[] DEFAULT_SOLR_URL = new String[]{"http://localhost:8000/solr"};
     public static String DEFAULT_ZK_HOST = "localhost:9983";
+    public static final String DEFAULT_ES_INDEX_FORMAT = "yyyy-MM";
 
 
     public boolean logging = DEFAULT_LOGGING;
@@ -33,4 +34,5 @@ public class Parameters {
     public Class<? extends TransactionSink> sink = DEFAULT_SINK;
     public String[] solrUrl =  DEFAULT_SOLR_URL;
     public String zkHost = DEFAULT_ZK_HOST;
+    public String esindexformat = DEFAULT_ES_INDEX_FORMAT;
 }

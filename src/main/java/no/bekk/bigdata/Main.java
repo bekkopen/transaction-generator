@@ -127,6 +127,10 @@ public class Main {
                 parameters.solrUrl = value.trim().split(",");
             }
 
+            if (param.startsWith("--esindexformat")) {
+                parameters.esindexformat = value.trim();
+            }
+
         }
         TransactionSink sink = parameters.sink.newInstance();
         sink.setParameters(parameters);

@@ -39,7 +39,7 @@ public class ElasticSearchSink implements TransactionSink {
     @Override
     public void insert(Transaction trans) {
         calendar.setTime(trans.date);
-        SimpleDateFormat indexFormat = new SimpleDateFormat("yyyy-MM");
+        SimpleDateFormat indexFormat = new SimpleDateFormat(parameters.esindexformat);
         String index = indexFormat.format(calendar.getTimeInMillis());
         String body = trans.toElasticJSON();
 
