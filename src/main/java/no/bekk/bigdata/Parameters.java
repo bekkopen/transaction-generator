@@ -15,7 +15,7 @@ public class Parameters {
     public static long DEFAULT_TRANSACTIONS_TO_GENERATE = 60000000; //60 millions = 12 millions pr year over 5 years
     public static Class<? extends TransactionSink> DEFAULT_SINK = SolrIndexer.class;
     public static String[] DEFAULT_SOLR_URL = new String[]{"http://localhost:8000/solr"};
-    public static final String DEFAULT_ES_INDEX_FORMAT = "yyyy-MM";
+    public static final String DEFAULT_ES_INDEX_FORMAT = "yyyy";
     public static String DEFAULT_HOST = "localhost:9983";
     public static String DEFAULT_CLUSTER_NAME = "TransactionCluster"; // cluster name for elastic search
 
