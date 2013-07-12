@@ -70,9 +70,9 @@ public class Transaction
                     ",\"valuteringDate\":" + valuteringDate.getTime() +
                     ",\"posteringDate\":" + posteringDate.getTime() +
                     ",\"bokforingDate\":" + bokforingDate.getTime() +
-                    ",\"batchNumber\":\"" + batchNumber + '"' +
-                    ",\"archiveReference\":\"" + archiveReference + '"' +
-                    ",\"numbericalReference\":\"" + numbericalReference + '"' +
+                    ",\"batchNumber\":" + batchNumber +
+                    ",\"archiveReference\":" + archiveReference +
+                    ",\"numbericalReference\":" + numbericalReference +
                     ",\"accountNumber\":" + accountNumber +
                     '}';
         }

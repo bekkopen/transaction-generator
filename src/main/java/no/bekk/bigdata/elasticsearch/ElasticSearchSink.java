@@ -29,6 +29,7 @@ public class ElasticSearchSink implements TransactionSink {
     private TransportClient client;
     private BulkRequestBuilder bulk;
     private Calendar calendar;
+    private static final int PORT = 9300;
     
     public ElasticSearchSink() {
         DEBUG = Main.debug();
@@ -67,8 +68,11 @@ public class ElasticSearchSink implements TransactionSink {
                 .build();
         client = new TransportClient(settings);
         System.out.println("Connecting to: " + parameters.host);
-        String[] tokens = parameters.host.split(":");
-        client.addTransportAddress(new InetSocketTransportAddress(tokens[0], Integer.parseInt(tokens[1])));
+        String[] hosts = parameters.host.split(",");
+
+        for (String s : hosts)
+                client.addTransportAddress(new InetSocketTransportAddress(s, PORT));
+
         bulk = client.prepareBulk();
     }
 
