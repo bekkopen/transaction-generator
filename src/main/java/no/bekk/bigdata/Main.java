@@ -1,5 +1,6 @@
 package no.bekk.bigdata;
 
+import no.bekk.bigdata.csv.CSVSink;
 import no.bekk.bigdata.elasticsearch.ElasticSearchSink;
 import no.bekk.bigdata.solr.MultiSolrIndexer;
 import no.bekk.bigdata.solr.SolrCloudIndexer;
@@ -105,6 +106,9 @@ public class Main {
                         break;
                     case "elasticsearch":
                         parameters.sink = ElasticSearchSink.class;
+                        break;
+                    case "csv":
+                        parameters.sink = CSVSink.class;
                         break;
                 }
 

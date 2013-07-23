@@ -2,9 +2,13 @@ package no.bekk.bigdata;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.Random;
 
 public class Transaction
     {
+        private static final int CATEGORY_MAX = 25;
+        private static final Random rand = Utils.random;
+
         public long id;
         public Date date;
         public BigDecimal amount;
@@ -74,6 +78,40 @@ public class Transaction
                     ",\"archiveReference\":" + archiveReference +
                     ",\"numbericalReference\":" + numbericalReference +
                     ",\"accountNumber\":" + accountNumber +
+                    ",\"category\":" + rand.nextInt(CATEGORY_MAX) +
                     '}';
+        }
+
+        public static String toCSVHeaderJSON() {
+            return "id,date,amount,description,remoteAccountNumber,currencyAmount"+
+                    ",currencyCode,isConfidential,accountNumber,fullDescription"+
+                    ",transactionCodeText,transactionCode,valuteringDate,posteringDate"+
+                    ",bokforingDate,batchNumber,archiveReference,numbericalReference,category";
+        }
+
+        public String toCSVJSON() {
+            return ""+id+','+date.getTime()+','+amount+','+CSVEscape(description)+','+remoteAccountNumber+','+
+                    currencyAmount+','+CSVEscape(currencyCode)+','+isConfidential+','+accountNumber+
+                    ','+CSVEscape(fullDescription)+','+CSVEscape(transactionCodeText)+','+CSVEscape(transactionCode)+','+
+                    valuteringDate.getTime()+','+posteringDate.getTime()+','+bokforingDate.getTime()+','+batchNumber+
+                    ','+archiveReference+','+numbericalReference+','+rand.nextInt(CATEGORY_MAX);
+        }
+
+        static public String CSVEscape(String s) {
+            final char esc = '\\';
+            String ret = "";
+            if (s.contains(",")) {
+                int last = 0;
+                char[] arr = s.toCharArray();
+                for (int i = 0; i < arr.length; i++) {
+                    char c = arr[i];
+                    if (c == ',') {
+                        ret += s.substring(last, i) + esc;
+                        last = i;
+                    }
+                }
+                ret += s.substring(last);
+            } else ret = s;
+            return ret;
         }
     }

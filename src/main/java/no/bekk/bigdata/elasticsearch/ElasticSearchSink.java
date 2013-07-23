@@ -4,6 +4,7 @@ import no.bekk.bigdata.Main;
 import no.bekk.bigdata.Parameters;
 import no.bekk.bigdata.Transaction;
 import no.bekk.bigdata.TransactionSink;
+import no.bekk.bigdata.csv.CSVSink;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -60,9 +61,9 @@ public class ElasticSearchSink implements TransactionSink {
 
     @Override
     public void setParameters(Parameters parameters) {
+        this.parameters = parameters;
         if (DEBUG) return;
 
-        this.parameters = parameters;
         Settings settings = ImmutableSettings.settingsBuilder()
                 .put("cluster.name", parameters.clusterName)
                 .build();
