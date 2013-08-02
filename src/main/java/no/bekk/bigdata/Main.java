@@ -1,5 +1,6 @@
 package no.bekk.bigdata;
 
+import no.bekk.bigdata.csv.CSVSink;
 import no.bekk.bigdata.elasticsearch.ElasticSearchSink;
 import no.bekk.bigdata.solr.MultiSolrIndexer;
 import no.bekk.bigdata.solr.SolrCloudIndexer;
@@ -10,6 +11,11 @@ import java.io.IOException;
 import static no.bekk.bigdata.Parameters.*;
 
 public class Main {
+    private static boolean debug = false;
+
+    public static boolean debug() {
+        return debug;
+    }
 
 
     private static void printHelp() {
@@ -27,10 +33,11 @@ public class Main {
                                    + DEFAULT_MAX_ACCOUNTS_PER_USER_BM);
         System.out.println(" --maxaccpm=XXXXXXX   --- max number of accounts per pm user, defaults to "
                                    + DEFAULT_MAX_ACCOUNTS_PER_USER_PM);
+        System.out.println(" --resume=on  --- Resumes previous session by retrieving random generator from disk. Defaults to off.");
 
-        System.out.println(" --sink=hbase|solr|solrcloud|multisolr  ---- where to output transactions, defaults to hbase");
+        System.out.println(" --sink=hbase|solr|solrcloud|multisolr|elasticsearch  ---- where to output transactions, defaults to hbase");
         System.out.println(" --solrUrl=URL        ---- URL to solr when solr is set as sink. comma-seperated for sink=multisolr Defaults to " + DEFAULT_SOLR_URL);
-        System.out.println(" --zkHost=URL         ---- URL to zookeeper when solrcloud is set as sink. Defaults to " + DEFAULT_SOLR_URL);
+        System.out.println(" --host=URL         ---- URL to zookeeper when solrcloud/elasticsearch is set as sink. Defaults to " + DEFAULT_SOLR_URL);
     }
 
     public static void main(String args[]) throws IOException, IllegalAccessException, InstantiationException {
@@ -100,16 +107,36 @@ public class Main {
                     case "elasticsearch":
                         parameters.sink = ElasticSearchSink.class;
                         break;
+                    case "csv":
+                        parameters.sink = CSVSink.class;
+                        break;
                 }
 
             }
 
-            if (param.startsWith("--zkHost")) {
-                parameters.zkHost = value.trim();
+            if (param.equals("--debug")) {
+                debug = true;
+            }
+
+            if (param.startsWith("--resume")) {
+                if ("on".equals(value))
+                    parameters.resume = true;
+            }
+
+            if (param.startsWith("--host")) {
+                parameters.host = value.trim();
             }
 
             if (param.startsWith("--solrUrl")) {
                 parameters.solrUrl = value.trim().split(",");
+            }
+
+            if (param.startsWith("--esindexformat")) {
+                parameters.esindexformat = value.trim();
+            }
+            
+            if (param.startsWith("--clustername")) {
+                parameters.clusterName = value.trim();
             }
 
         }

@@ -18,7 +18,7 @@ public class SolrCloudIndexer implements TransactionSink {
     public void insert(Transaction trans) {
         try {
             if (server == null) {
-                this.server = new CloudSolrServer(parameters.zkHost);
+                this.server = new CloudSolrServer(parameters.host);
                 this.server.setDefaultCollection("collection1");
             }
             this.server.addBean(SolrBankTransaction.fromTransaction(trans));

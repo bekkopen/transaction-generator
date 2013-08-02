@@ -1,9 +1,10 @@
 package no.bekk.bigdata.elasticsearch;
 
-import com.sun.xml.bind.v2.TODO;
+import no.bekk.bigdata.Main;
 import no.bekk.bigdata.Parameters;
 import no.bekk.bigdata.Transaction;
 import no.bekk.bigdata.TransactionSink;
+import no.bekk.bigdata.csv.CSVSink;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -11,6 +12,9 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 /**
  * Created with IntelliJ IDEA.
@@ -20,30 +24,56 @@ import org.elasticsearch.common.transport.InetSocketTransportAddress;
  * To change this template use File | Settings | File Templates.
  */
 public class ElasticSearchSink implements TransactionSink {
-    private final int limit = 1000;
+    private final boolean DEBUG;
+    private final int LIMIT;
     private Parameters parameters;
     private TransportClient client;
     private BulkRequestBuilder bulk;
+    private Calendar calendar;
+    private static final int PORT = 9300;
+    
+    public ElasticSearchSink() {
+        DEBUG = Main.debug();
+        LIMIT = 1000;
+        calendar = Calendar.getInstance();
+    }
 
     @Override
     public void insert(Transaction trans) {
-        bulk.add(client.prepareIndex("sb1", "transer", "" + trans.id)
-                .setSource(transactionToJSON(trans)));
-        if (bulk.numberOfActions() >= limit) {
-            flush();
+        calendar.setTime(trans.date);
+        SimpleDateFormat indexFormat = new SimpleDateFormat(parameters.esindexformat);
+        String index = indexFormat.format(calendar.getTimeInMillis());
+        String body = trans.toElasticJSON();
+
+        if (Main.debug()) {
+            System.out.println(body);
+        } else {
+            bulk.add(
+                    client.prepareIndex(index, "trans", "" + trans.id)
+                            .setSource(body).setRouting(trans.getAccountNumber())
+            );
+
+            if (bulk.numberOfActions() >= LIMIT) {
+                flush();
+            }
         }
     }
 
     @Override
     public void setParameters(Parameters parameters) {
         this.parameters = parameters;
+        if (DEBUG) return;
+
         Settings settings = ImmutableSettings.settingsBuilder()
-                .put("cluster.name", "TransactionCluster")
+                .put("cluster.name", parameters.clusterName)
                 .build();
         client = new TransportClient(settings);
-        System.out.println("Connecting to: " + parameters.zkHost);
-        String[] tokens = parameters.zkHost.split(":");
-        client.addTransportAddress(new InetSocketTransportAddress(tokens[0], Integer.parseInt(tokens[1])));
+        System.out.println("Connecting to: " + parameters.host);
+        String[] hosts = parameters.host.split(",");
+
+        for (String s : hosts)
+                client.addTransportAddress(new InetSocketTransportAddress(s, PORT));
+
         bulk = client.prepareBulk();
     }
 

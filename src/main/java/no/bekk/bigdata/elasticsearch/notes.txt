@@ -1,3 +1,34 @@
+*** ENSURING CORRECT JVM-VERSION (Debian-based) ***
+Add repos to apt-get, by adding lines to /etc/apt/sources.list:
+deb http://ppa.launchpad.net/webupd8team/java/ubuntu precise main
+deb-src http://ppa.launchpad.net/webupd8team/java/ubuntu precise main
+
+Run as root:
+apt-get update
+apt-get install oracle-java7-installer
+
+Add to ~/.bashrc to make sure we use Oracle's JVM:
+export JAVA_HOME=/usr/lib/jvm/java-7-oracle
+
+(Source: http://www.webupd8.org/2012/06/how-to-install-oracle-java-7-in-debian.html)
+
+
+*** INCREASE NUMBER OF OPEN FILES ***
+Elasticsearch requires to have a lot of files open simultaneously.
+To increase the limit, add lines to /etc/security/limits.conf:
+<username>            soft    nofile          32000
+<username>            hard    nofile          32000
+Where <username> is the name of the user running elasticsearch.
+
+(Source: http://www.elasticsearch.org/tutorials/too-many-open-files/)
+
+
+*** MISC ***
+Once an index has been created, it's number of shards cannot be changed (Without re-indexing the data).
+
+
+
+
 Different java versions on server/client cause serialization issues for Elastic search Java API.
 
 What to look at in elastic search config files:
@@ -7,6 +38,3 @@ data: whether this server will store data, or just pull data from other node to 
 Need to look up a good config of these for a larger cluster.
 
 How to add oracle jvm on debian server:
-
-
-
