@@ -90,7 +90,7 @@ public class Transaction
         }
 
         public String toCSVJSON() {
-            return ""+id+','+date.getTime()+','+amount+','+CSVEscape(description)+','+remoteAccountNumber+','+
+            return ""+id+','+date.getTime()+','+(long)(amount.doubleValue()*100)+','+CSVEscape(description)+','+remoteAccountNumber+','+
                     currencyAmount+','+CSVEscape(currencyCode)+','+isConfidential+','+accountNumber+
                     ','+CSVEscape(fullDescription)+','+CSVEscape(transactionCodeText)+','+CSVEscape(transactionCode)+','+
                     valuteringDate.getTime()+','+posteringDate.getTime()+','+bokforingDate.getTime()+','+batchNumber+
